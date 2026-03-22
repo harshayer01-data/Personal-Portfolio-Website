@@ -33,6 +33,8 @@
 <!-- ── FAVICON ── -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23b8963e'/><text x='16' y='23' text-anchor='middle' font-family='Georgia,serif' font-size='17' font-weight='700' fill='%230c0c12'>HA</text></svg>">
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════
@@ -59,8 +61,8 @@
   --sp-l:  4rem;
   --sp-xl: 7rem;
 
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-body:    'Outfit', system-ui, sans-serif;
+  --font-display: 'Cormorant Garamond', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-body:    'Outfit', 'Segoe UI', Helvetica, Arial, sans-serif;
 
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -84,17 +86,27 @@ a { color:inherit; text-decoration:none; }
 /* ═══════════════════════════════════════
    CUSTOM CURSOR (desktop only)
 ═══════════════════════════════════════ */
-@media (hover:hover) {
+@media (pointer:fine) {
   body { cursor:none; }
-  #c-dot, #c-ring {
-    position:fixed; pointer-events:none; z-index:9999; border-radius:50%;
-    transform:translate(-50%,-50%);
-  }
-  #c-dot  { width:7px;  height:7px;  background:var(--gold); transition:transform 0.08s; }
-  #c-ring { width:34px; height:34px; border:1.5px solid var(--gold); opacity:0.55;
-            transition:width 0.2s var(--ease), height 0.2s var(--ease), opacity 0.2s; }
-  #c-ring.grow { width:52px; height:52px; opacity:0.25; }
 }
+#c-dot, #c-ring {
+  position:fixed; pointer-events:none; z-index:9999; border-radius:50%;
+  top:-100px; left:-100px;
+  transform:translate(-50%,-50%);
+  will-change:left,top;
+}
+#c-dot {
+  width:8px; height:8px;
+  background:var(--gold);
+  transition:width 0.2s, height 0.2s;
+}
+#c-ring {
+  width:36px; height:36px;
+  border:1.5px solid var(--gold);
+  opacity:0.55;
+  transition:width 0.22s var(--ease), height 0.22s var(--ease), opacity 0.22s;
+}
+#c-ring.grow { width:54px; height:54px; opacity:0.22; }
 
 /* ═══════════════════════════════════════
    NOISE OVERLAY
@@ -977,24 +989,35 @@ footer {
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* ── CURSOR ── */
-const dot  = document.getElementById('c-dot');
-const ring = document.getElementById('c-ring');
-if (dot && ring && window.matchMedia('(hover:hover)').matches) {
-  let mx=0,my=0,rx=0,ry=0;
-  document.addEventListener('mousemove', e => {
-    mx=e.clientX; my=e.clientY;
-    dot.style.left=mx+'px'; dot.style.top=my+'px';
+(function(){
+  var dot  = document.getElementById('c-dot');
+  var ring = document.getElementById('c-ring');
+  if (!dot || !ring) return;
+  // Only activate on devices with a fine pointer (mouse)
+  if (!window.matchMedia('(pointer:fine)').matches) return;
+
+  var mx=window.innerWidth/2, my=window.innerHeight/2;
+  var rx=mx, ry=my;
+
+  document.addEventListener('mousemove', function(e){
+    mx = e.clientX; my = e.clientY;
+    dot.style.left = mx + 'px';
+    dot.style.top  = my + 'px';
   });
+
   (function loop(){
-    rx+=(mx-rx)*0.13; ry+=(my-ry)*0.13;
-    ring.style.left=rx+'px'; ring.style.top=ry+'px';
+    rx += (mx - rx) * 0.13;
+    ry += (my - ry) * 0.13;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
     requestAnimationFrame(loop);
   })();
-  document.querySelectorAll('a,button,.skill-card,.about-card,.exp-item,.ach-card,.int-item,.c-link').forEach(el=>{
-    el.addEventListener('mouseenter',()=>ring.classList.add('grow'));
-    el.addEventListener('mouseleave',()=>ring.classList.remove('grow'));
+
+  document.querySelectorAll('a,button,.skill-card,.about-card,.exp-item,.ach-card,.int-item,.c-link').forEach(function(el){
+    el.addEventListener('mouseenter', function(){ ring.classList.add('grow'); });
+    el.addEventListener('mouseleave', function(){ ring.classList.remove('grow'); });
   });
-}
+})();
 
 /* ── NAV SCROLL ── */
 const nav = document.getElementById('nav');
